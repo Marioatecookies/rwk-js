@@ -1,0 +1,37 @@
+so since you're reading this, you might know what this is.
+but also maybe not so here is what this is:
+this is documention, which is basically how the inner workings work
+and that's it
+but how about the actual documentation?
+
+RGBA is needed for a stage, and here is what each of them mean:
+R means what the thing is.  it says what it should do and is the "item id" of this
+G means how many hits the thing can take before it spontaneously detonates.  robot is uneffected by this value, sorry
+B is extra data.  this value changes with every object, provided they use it.
+A means what it looks like.  this can't be zero, and if it is the object in question will be ignored completely.
+
+how about the R to thing chart?
+
+robot is 1 (B is background colour)
+kitty is 2
+ground is 3 (B sets if it's explosive, 1 for yes, 2 for indirectly)
+(baba is you)
+squiddle is 4
+murp is 5
+drippy is 6
+zarp is 7 (B sets fire interveal in 1/60th of a second)
+slurg is 8
+key is 9 (A also sets key type, unless B isn't 0)
+gate is 10 (A also sets gate type, unless B isn't 0)
+upgrade is 11 (B sets upgrade type, see upgrade info section far below)
+
+what upgrades are there?
+
+B/upgrade (description/variant)
+1/Jump Jets (Press [Z] to double jump!)
+2/Blaster (Press [X] to shoot deadly lazorz!)
+3/Super Jump Jets (Jump again in midair!)
+4/Super Blaster (Hold [X] for insane blasting!)
+5/Rocket Riser (Down+[Z] to rocket upwards!)
+6/Dash Rockets (Press [C] to zip!)
+7/Mega Missle (Down+[X] to fire missiles!)
