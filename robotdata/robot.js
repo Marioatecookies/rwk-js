@@ -96,10 +96,10 @@ robot.skin = 1
 kitty.pose = 1
 backdrop.skin = 1
 background.src = "robotdata/background/" + backdrop.skin + ".png"
-block.number = 2 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
-block.xpos = [88, 104]
-block.ypos = [104, 104]
-block.skin  = [1, 1]
+block.number = 6 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
+block.xpos = [88, 104, 120, 136, 152, 168]
+block.ypos = [104, 104, 104, 104, 104, 104]
+block.skin  = [1, 1, 1, 1, 1, 1]
 robot.jumper = false
 robot.gun = false
 robot.dash = false
@@ -107,6 +107,25 @@ robot.highjump = false
 robot.laser = false
 robot.airgun = false // You can always shoot in the air, I just needed a way to say this
 tic = false
+pressedKeys = []
+window.addEventListener("keydown",
+    function(e){
+        pressedKeys[e.keyCode] = true;
+        checkCombinations(e);
+    },
+false);
+
+window.addEventListener('keyup',
+    function(e){
+        pressedKeys[e.keyCode] = false;
+    },
+false);
+function checkCombinations(e){
+    if(pressedKeys["a".charCodeAt(0)] && e.ctrlKey){
+        alert("You're not allowed to mark all content!");
+        e.preventDefault();
+    }
+}
 // Although chechTouch() has no uses on it's own and is kinda limited, it has its uses when checking for touch damage
 function checkTouch(thing1x,thing1y,thing2x,thing2y,wide1,wide2,tall1,tall2) { // Noting my potential overusage of comments
 	if (wide1 !== null && wide2 !== null) { // Checks if wide is actually an existant variable in the equation.  If it isn't, it won't be bothered checking tall.
@@ -147,10 +166,11 @@ function applyPhysics() {
 	robot.landed = 0
 	var loops = 0
 	while (loops != block.number) {
-		if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops], 16,16,16,16)) {
+		if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16)) {
 			robot.landed = 1
-			if (!checkTouch(robot.xpos, robot.ypos + 1, block.xpos[loops], robot.ypos[loops],16,16,15,16)) {
-				robot.ypos = robot.ypos + 1
+			if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16)
+			&& checkTouch(robot.xpos, robot.ypos, block.xpos[loops], block.ypos[loops],16,16,16,16)) {
+				robot.ypos = robot.ypos - 1
 			}
 		} loops = loops + 1
 	}
@@ -200,6 +220,22 @@ function gameLoop() {
 	if (tic == false) {
 		tic = true
 	} else if (tic == true) {
+		var loops = 0
+		if (pressedKeys[39] == true) {
+			if (robot.xvol < 3) {
+				robot.xvol = robot.xvol + 1
+			}
+		} else if (pressedKeys[37] == true) {
+			if (robot.xvol > -3 ) {
+				robot.xvol = robot.xvol - 1
+			}
+		} else {
+			if (robot.xvol > 0) {
+				robot.xvol = robot.xvol - 1
+			} else if (robot.xvol < 0) {
+				robot.xvol = robot.xvol + 1
+			}
+		}
 		applyPhysics();
 		tic = false }
 	ctx.clearRect(0, 0, c.width, c.height);
