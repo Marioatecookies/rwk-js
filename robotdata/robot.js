@@ -82,8 +82,8 @@ robot.xpos = 88
 robot.ypos = 72
 camera.xpos = 0
 camera.ypos = 0
-kitty.xpos = 168
-kitty.ypos = 88
+kitty.xpos = 160
+kitty.ypos = 64
 robot.landed = 0
 robot.xvol = 0
 robot.yvol = 0
@@ -96,10 +96,10 @@ robot.skin = 1
 kitty.pose = 1
 backdrop.skin = 1
 background.src = "robotdata/background/" + backdrop.skin + ".png"
-block.number = 6 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
-block.xpos = [88, 104, 120, 136, 152, 168]
-block.ypos = [104, 104, 104, 104, 104, 104]
-block.skin  = [1, 1, 1, 1, 1, 1]
+block.number = 7 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
+block.xpos = [80, 96, 112, 128, 144, 160, 64]
+block.ypos = [96, 96, 96, 96, 96, 96, 96]
+block.skin  = [1, 1, 1, 1, 1, 1, 6]
 robot.jumper = false
 robot.gun = false
 robot.dash = false
@@ -194,10 +194,11 @@ function applyPhysics() {
 }
 function drawBlocks(offsetX, offsetY) {
 	var loops = 0
-	var ground = new Image(16,16)
-	ground.src = "robotdata/ground/1.png"
+	var ground = []
 	while (loops != block.number) {
-		ctx.drawImage(ground,block.xpos[loops] - offsetX, block.ypos[loops] - offsetY)
+		ground[loops] = new Image(16,16)
+		ground[loops].src = "robotdata/ground/" + block.skin[loops] +".png"
+		ctx.drawImage(ground[loops],block.xpos[loops] - offsetX, block.ypos[loops] - offsetY)
 		loops = loops + 1
 	}
 }
