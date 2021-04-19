@@ -238,26 +238,26 @@ function gameLoop() {
 			}
 		}
 		applyPhysics();
+		ctx.clearRect(0, 0, c.width, c.height);
+		drawBackground(camera.xpos % 32,camera.ypos % 32,32,32);
+		drawBlocks(camera.xpos, camera.ypos)
+		ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
+		ctx.drawImage(bot,robot.xpos - camera.xpos,robot.ypos - camera.ypos);
+		kitty.frame = kitty.frame + 1
+		if (kitty.frame === 20) {
+			if (kitty.pose == 1) {
+				cat.src = "robotdata/kitty/" + kitty.skin + "/2.png"
+				kitty.pose = 2
+			} else if (kitty.pose == 2) {
+				cat.src = "robotdata/kitty/" + kitty.skin + "/1.png"
+				kitty.pose = 3
+			} else if (kitty.pose == 3) {
+				cat.src = "robotdata/kitty/" + kitty.skin + "/3.png"
+				kitty.pose = 4
+			} else { cat.src = "robotdata/kitty/" + kitty.skin + "/1.png", kitty.pose = 1 }
+			kitty.frame = 0
+		}
 		tic = false }
-	ctx.clearRect(0, 0, c.width, c.height);
-	drawBackground(camera.xpos % 32,camera.ypos % 32,32,32);
-	drawBlocks(camera.xpos, camera.ypos)
-	ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
-	ctx.drawImage(bot,robot.xpos - camera.xpos,robot.ypos - camera.ypos);
-	kitty.frame = kitty.frame + 1
-	if (kitty.frame === 20) {
-		if (kitty.pose == 1) {
-			cat.src = "robotdata/kitty/" + kitty.skin + "/2.png"
-			kitty.pose = 2
-		} else if (kitty.pose == 2) {
-			cat.src = "robotdata/kitty/" + kitty.skin + "/1.png"
-			kitty.pose = 3
-		} else if (kitty.pose == 3) {
-			cat.src = "robotdata/kitty/" + kitty.skin + "/3.png"
-			kitty.pose = 4
-		} else { cat.src = "robotdata/kitty/" + kitty.skin + "/1.png", kitty.pose = 1 }
-		kitty.frame = 0
-	}
 	window.requestAnimationFrame(gameLoop);
 }
 music1.play();
