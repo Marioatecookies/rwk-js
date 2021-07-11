@@ -19,7 +19,7 @@ ground is 3 (B sets if it's explosive, 1 for yes, 2 for indirectly)
 squiddle is 4
 murp is 5
 drippy is 6
-zarp is 7 (B sets fire interveal in 1/60th of a second)
+zarp is 7 (B sets fire interveal in 1/30th of a second)
 slurg is 8
 key is 9 (A also sets key type, unless B isn't 0)
 gate is 10 (A also sets gate type, unless B isn't 0)

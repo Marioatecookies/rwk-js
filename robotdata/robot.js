@@ -58,7 +58,7 @@ function pixel8(image, x, y, w, h) {
 	};
 
 	return data;
-} // pixel8 Import is what this is, thanks to them for making this possible
+} // pixel8 Import is what this is, thanks to them for making this possible, provided I can figure out how it works
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms)); }
 function drawBackground(xOffset, yOffset, imageX, imageY) {
@@ -78,12 +78,13 @@ function showImage(x,y,sprite) {
 }
 // And that ends the functions!  Now you see variable definition and the laws of physics
 var robot = {}, camera = {}, kitty = {}, backdrop = {}, background = new Image(32,32), block = {}
+robot.gravity = 6
 robot.xpos = 88
 robot.ypos = 72
 camera.xpos = 0
 camera.ypos = 0
-kitty.xpos = 160
-kitty.ypos = 64
+kitty.xpos = 224
+kitty.ypos = 48
 robot.landed = 0
 robot.xvol = 0
 robot.yvol = 0
@@ -96,10 +97,11 @@ robot.skin = 1
 kitty.pose = 1
 backdrop.skin = 1
 background.src = "robotdata/background/" + backdrop.skin + ".png"
-block.number = 7 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
-block.xpos = [80, 96, 112, 128, 144, 160, 64]
-block.ypos = [96, 96, 96, 96, 96, 96, 96]
-block.skin  = [1, 1, 1, 1, 1, 1, 6]
+block.number = 8 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
+block.xpos = [80,96,112,128,144,160,64,48,32,16,16,16,16,16,32,48,176,192,192,208,208,224,224,240,240,256,256,256,256,256,256,256,224,16,16,0,0,0,0,0,0,0] // 33
+block.ypos = [96,96,96,96,96,96,96,80,80,64,48,32,96,80,96,96,96,96,80,80,96,96,80,80,96,96,80,64,48,32,16,0,64,16,0,0,16,32,48,64,80,96] // 33
+block.skin  = [1,1,1,1,1,1,6,6,6,6,6,6,6,6,6,6,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,11,6,6,6,6,6,6,6,6,6] // 35
+block.number = block.skin.length // Please make an auto-detect for the shortest length, thanks future me
 robot.jumper = false
 robot.gun = false
 robot.dash = false
@@ -108,6 +110,7 @@ robot.laser = false
 robot.airgun = false // You can always shoot in the air, I just needed a way to say this
 tic = false
 pressedKeys = []
+droptic = 3
 window.addEventListener("keydown",
     function(e){
         pressedKeys[e.keyCode] = true;
@@ -145,7 +148,7 @@ function checkTouch(thing1x,thing1y,thing2x,thing2y,wide1,wide2,tall1,tall2) { /
 			return true} else {return false}
 		}
 	} else {
-		// Check if the 16x16 square is within the other.  Use thing#x and thing#y to check where they are.
+		// Check if the 16x16 square is within the other.  Use thing.x and thing.y to check where they are.
 		if (thing1x < thing2x + 16 &&
 			thing1x + 16 > thing2x &&
 			thing1y < thing2y + 16 &&
@@ -166,18 +169,21 @@ function applyPhysics() {
 	robot.landed = 0
 	var loops = 0
 	while (loops != block.number) {
-		if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16)) {
+		if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16) && robot.yvol != -10) {
 			robot.landed = 1
 			if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16)
 			&& checkTouch(robot.xpos, robot.ypos, block.xpos[loops], block.ypos[loops],16,16,16,16)) {
 				robot.ypos = robot.ypos - 1
 			}
 		} loops = loops + 1
-	}
+	}if (droptic == robot.gravity) {
+	if (robot.landed == 1 && robot.yvol != -10) {
+		robot.yvol = 0}
 	if (robot.landed == 0) {
 		robot.yvol = robot.yvol + 1}
-	else if (robot.landed == 1) {
-		robot.yvol = 0}
+		droptic = 0
+	} else if (droptic != robot.gravity) { // Same thing the game does to make it run at 30 fps.
+		droptic = droptic + 1}
 	if (checkTouch(robot.xpos,robot.ypos,kitty.xpos,kitty.ypos, 16,16,16,16)) {
 		if (kitty.got != 1) {
 			console.log("Robot Got Kitty!"); }
@@ -217,24 +223,30 @@ titletheme.loop = true
 var cat = new Image(32,32);
 cat.src = "robotdata/kitty/1/2.png"
 ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
-function gameLoop() {
-	if (tic == false) {
+function gameLoop() {// Tics process order is Inputs, Physics, Rendering.
+	if (tic == false) { // Forces the game to run at 30 FPS instead of 60.  Helps slightly on ancient chromebooks.
 		tic = true
 	} else if (tic == true) {
 		var loops = 0
-		if (pressedKeys[39] == true) {
+		if (pressedKeys[39] == true) { // Now turn to the right!
 			if (robot.xvol < 3) {
 				robot.xvol = robot.xvol + 1
 			}
-		} else if (pressedKeys[37] == true) {
+		} else if (pressedKeys[37] == true) { // Now turn to the left!
 			if (robot.xvol > -3 ) {
 				robot.xvol = robot.xvol - 1
 			}
 		} else {
-			if (robot.xvol > 0) {
+			if (robot.xvol > 0) { // 
 				robot.xvol = robot.xvol - 1
 			} else if (robot.xvol < 0) {
 				robot.xvol = robot.xvol + 1
+			}
+		}
+		if (pressedKeys[32] == true | pressedKeys[90] == true) {
+			if (robot.landed == true) {
+				robot.yvol = -10
+				robot.landed = false
 			}
 		}
 		applyPhysics();
@@ -242,7 +254,7 @@ function gameLoop() {
 		drawBackground(camera.xpos % 32,camera.ypos % 32,32,32);
 		drawBlocks(camera.xpos, camera.ypos)
 		ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
-		ctx.drawImage(bot,robot.xpos - camera.xpos,robot.ypos - camera.ypos);
+		ctx.drawImage(bot,Math.round(robot.xpos) - camera.xpos,Math.round(robot.ypos) - camera.ypos);
 		kitty.frame = kitty.frame + 1
 		if (kitty.frame === 20) {
 			if (kitty.pose == 1) {
