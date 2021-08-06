@@ -67,7 +67,7 @@ function drawBackground(xOffset, yOffset, imageX, imageY) {
 	var bg = bgWide * bgTall
 	var loops = 0
 	while (loops != bg) {
-		ctx.drawImage(background,  ((loops % bgWide) * imageX) - xOffset, (Math.floor(loops / bgWide) * imageY) - yOffset)
+		ctx.drawImage(background,  ((loops % bgWide) * imageX) - xOffset,(Math.floor(loops / bgWide) * imageY) - yOffset)
 		loops = loops + 1
 	}
 }
@@ -77,17 +77,28 @@ function showImage(x,y,sprite) {
 	ctx.drawImage(pic,x,y);
 }
 // And that ends the functions!  Now you see variable definition and the laws of physics
-var robot = {}, camera = {}, kitty = {}, backdrop = {}, background = new Image(32,32), block = {}
+var robot = {}, camera = {}, kitty = {}, backdrop = {}, background = new Image(32,32), block = {}, level = {}
 robot.gravity = 6
-robot.xpos = 88
-robot.ypos = 72
-camera.xpos = 0
-camera.ypos = 0
+robot.xpos = 160
+robot.ypos = 1088
+robot.vxpos = robot.xpos // Visual X position
+robot.vypos = robot.ypos // Visual Y position
+robot.oxpos = robot.xpos // Last tick's X position
+robot.oypos = robot.ypos // Last tick's Y position
+camera.xpos = robot.xpos - 320
+camera.ypos = robot.ypos - 240
+camera.txpos = robot.xpos - 320
+camera.typos = robot.ypos - 240
+camera.speed = 32
+camera.xrunahead = 16
+camera.yrunahead = 8
 kitty.xpos = 224
 kitty.ypos = 48
 robot.landed = 0
 robot.xvol = 0
 robot.yvol = 0
+robot.checkx = robot.xpos
+robot.checky = robot.ypos
 robot.shootdelay = -1 // Both shootdelay and airjump are -1 so that they're disabled until you get their upgrades
 robot.airjump = -1
 kitty.got = 0 // If this is ever 1, you have successfully won the game. Good job! (Unless you cheated)
@@ -97,20 +108,81 @@ robot.skin = 1
 kitty.pose = 1
 backdrop.skin = 1
 background.src = "robotdata/background/" + backdrop.skin + ".png"
-block.number = 8 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
-block.xpos = [80,96,112,128,144,160,64,48,32,16,16,16,16,16,32,48,176,192,192,208,208,224,224,240,240,256,256,256,256,256,256,256,224,16,16,0,0,0,0,0,0,0] // 33
-block.ypos = [96,96,96,96,96,96,96,80,80,64,48,32,96,80,96,96,96,96,80,80,96,96,80,80,96,96,80,64,48,32,16,0,64,16,0,0,16,32,48,64,80,96] // 33
-block.skin  = [1,1,1,1,1,1,6,6,6,6,6,6,6,6,6,6,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,11,6,6,6,6,6,6,6,6,6] // 35
+block.number = 1 // This exists for the sole purpose of knowing how many blocks you need to check for collision, so incrument this every time a new block is detected
+block.xpos = [160,144,176,128,128,128,128,128,128,144,160,176] // 1
+block.ypos = [1104,1104,1104,1088,1072,1056,1104,1040,1040,1040,1040,1040] // 1
+block.skin  = [1,1,1,1,1,1,1,1,1,1,1,1] // 1
 block.number = block.skin.length // Please make an auto-detect for the shortest length, thanks future me
+level.chunks = [] // Level chunks should be 5x5 (80x80 in pixels) big.
+level.chunks[0] = { // Remember, to get an object from an array, do array[#].element
+xpos:6,
+ypos:0,
+blocks:[ // x = x position, y = y position, s = skin
+	{x:512,y:0,s:0},
+	{x:496,y:0,s:0},
+	{x:528,y:0,s:0}]
+} // Random note: I've probably killed like 20 fruit flies today alone, just stop BUGGING me.
+level.getChunk = function(x, y, returnId) {
+	var loops = 0
+	var worker = {}
+	var worker2 = level.chunks[length]
+	while (loops != worker2) {
+		worker = level.chunks[loops]
+		if (worker.xpos == x
+		&& worker.ypos == y) {
+			if (returnId == false || returnId == undefined || returnId == null) 
+			{return worker
+			} else {return loops}
+		} loops = loops + 1
+	}console.log("I can't find the chunk at " + x + ", " + y + "! Does it even exist?");
+}
+level.getBlock = function(x, y, id) {
+	// Put an algorithm here please, thanks
+}
 robot.jumper = false
 robot.gun = false
 robot.dash = false
 robot.highjump = false
 robot.laser = false
 robot.airgun = false // You can always shoot in the air, I just needed a way to say this
-tic = false
+tic = 2
 pressedKeys = []
-droptic = 3
+droptic = 0
+debugcheats = {list:{
+	resetCamera:{description:"Moves the camera to 0,0 on the map. If given a location, however, it'll move there instead."}
+}
+}
+/* debugcheats.offsetBlocks = function(x,y,tile) {
+	if (tile != null) {
+	block.xpos[tile] = block.xpos[tile] + x
+	block.ypos[tile] = block.ypos[tile] + y
+	} else {
+	var loops = 0
+	while (loops != block.xpos[length]) {
+		block.xpos[loops] = block.xpos[loops] + x
+		loops = loops++
+	} loops = 0
+	while (loops != block.ypos[length]) {
+		block.ypos[loops] = block.ypos[loops] + y
+		loops = loops++
+	} 
+}} Commenting this out because the world is getting chunky.  Also because it froze the game on use. */
+debugcheats.resetCamera = function(x,y) {
+	if (x = null) {
+		camera.txpos = 0
+		camera.xpos = 0
+	} else {
+		camera.txpos = x
+		camera.xpos = x
+	} if (y = null) {
+		camera.typos = 0
+		camera.ypos = 0
+	} else {
+		camera.typos = y
+		camera.ypos = y}
+}
+var soundfx = {}
+
 window.addEventListener("keydown",
     function(e){
         pressedKeys[e.keyCode] = true;
@@ -167,6 +239,9 @@ if (rect1.x < rect2.x + rect2.width &&
 // applyPhysics() was actually gonna be a "Hey, make this thing obey the laws of physics this frame" sorta thing, but I decided otherwise because not everything needs velocity
 function applyPhysics() {
 	robot.landed = 0
+	robot.oxpos = robot.xpos
+	robot.oypos = robot.ypos
+	// console.log(robot.yvol) Debugging only!
 	var loops = 0
 	while (loops != block.number) {
 		if (checkTouch(robot.xpos, robot.ypos + 2, block.xpos[loops], block.ypos[loops],16,16,16,16) && robot.yvol != -10) {
@@ -176,14 +251,11 @@ function applyPhysics() {
 				robot.ypos = robot.ypos - 1
 			}
 		} loops = loops + 1
-	}if (droptic == robot.gravity) {
-	if (robot.landed == 1 && robot.yvol != -10) {
-		robot.yvol = 0}
-	if (robot.landed == 0) {
-		robot.yvol = robot.yvol + 1}
+	} droptic = droptic++
+	if (robot.gravity == droptic && robot.landed == 1) {
+		robot.yvol = robot.yvol++
 		droptic = 0
-	} else if (droptic != robot.gravity) { // Same thing the game does to make it run at 30 fps.
-		droptic = droptic + 1}
+	}
 	if (checkTouch(robot.xpos,robot.ypos,kitty.xpos,kitty.ypos, 16,16,16,16)) {
 		if (kitty.got != 1) {
 			console.log("Robot Got Kitty!"); }
@@ -194,7 +266,17 @@ function applyPhysics() {
 		robot.yvol = 0
 	} else {
 		robot.yvol = robot.yvol + 1
-	}
+	} var worker
+	var loops = 0
+	/*if (robot.xvol > 0) {
+		while (worker != robot.xvol) {
+			robot.xpos = robot.xpos++
+			worker = worker++
+			while (loops != block.number) {
+				if (checkTouch(robot.xpos, robot.ypos, block.xpos[loops], block.ypos[loops],16,16,16,16)) {
+					worker = robot.xvol}}
+		}
+	}*/
 	robot.xpos = robot.xpos + robot.xvol
 	robot.ypos = robot.ypos + robot.yvol
 }
@@ -223,10 +305,7 @@ titletheme.loop = true
 var cat = new Image(32,32);
 cat.src = "robotdata/kitty/1/2.png"
 ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
-function gameLoop() {// Tics process order is Inputs, Physics, Rendering.
-	if (tic == false) { // Forces the game to run at 30 FPS instead of 60.  Helps slightly on ancient chromebooks.
-		tic = true
-	} else if (tic == true) {
+function gameLoop() {// Tics process order is Inputs, Loading, Physics, Camera, Rendering.
 		var loops = 0
 		if (pressedKeys[39] == true) { // Now turn to the right!
 			if (robot.xvol < 3) {
@@ -249,12 +328,24 @@ function gameLoop() {// Tics process order is Inputs, Physics, Rendering.
 				robot.landed = false
 			}
 		}
-		applyPhysics();
+		// Add loading logic here, for optimization purposes
+		robot.vxpos = robot.vxpos + ((robot.xpos - robot.oxpos) / 3)
+		robot.vypos = robot.vypos + ((robot.ypos - robot.oypos) / 3)
+		if (tic == 2) {
+			tic = 0
+			applyPhysics();
+			robot.vxpos = robot.oxpos
+			robot.vypos = robot.oypos
+		} else {tic = tic + 1}
+		camera.txpos = camera.txpos + ((((robot.vxpos + (robot.xvol * camera.xrunahead)) - 328) - camera.txpos) / camera.speed)
+		camera.typos = camera.typos + ((((robot.vypos + (robot.yvol * camera.yrunahead)) - 240) - camera.typos) / camera.speed)
+		camera.xpos = Math.round(camera.txpos)
+		camera.ypos = Math.round(camera.typos)
 		ctx.clearRect(0, 0, c.width, c.height);
 		drawBackground(camera.xpos % 32,camera.ypos % 32,32,32);
 		drawBlocks(camera.xpos, camera.ypos)
 		ctx.drawImage(cat,kitty.xpos - camera.xpos,kitty.ypos - camera.ypos);
-		ctx.drawImage(bot,Math.round(robot.xpos) - camera.xpos,Math.round(robot.ypos) - camera.ypos);
+		ctx.drawImage(bot,Math.round(robot.vxpos - camera.xpos),Math.round(robot.vypos - camera.ypos));
 		kitty.frame = kitty.frame + 1
 		if (kitty.frame === 20) {
 			if (kitty.pose == 1) {
@@ -269,7 +360,6 @@ function gameLoop() {// Tics process order is Inputs, Physics, Rendering.
 			} else { cat.src = "robotdata/kitty/" + kitty.skin + "/1.png", kitty.pose = 1 }
 			kitty.frame = 0
 		}
-		tic = false }
 	window.requestAnimationFrame(gameLoop);
 }
 music1.play();
